@@ -1,0 +1,47 @@
+---
+title: "PPC Analysis"
+author: "Jens Laufer"
+date: "6 12 2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, message = F, warning = F)
+```
+
+```{r}
+library(tidyverse)
+library(ppctools)
+```
+
+
+
+```{r}
+profit <- 3000
+product_cost <- 100
+cpc <- .2
+cr <- .02
+ctr <- .02
+ppctools::traffic_for_profit(
+  profit = profit,
+  product_cost = product_cost,
+  cpc = cpc,
+  cr = cr,
+  ctr = ctr
+)
+```
+
+```{r}
+data <- expand_grid(
+  cpc=seq(0.1,1,0.1),
+  cr=seq(0.01,0.05,0.01),
+  ctr=seq(0.01,0.05,0.01)
+) %>% 
+  mutate(profit=3000, product_cost=18) %>% 
+  mutate(traffic_for_profit=traffic_for_profit(profit, product_cost, cpc, cr, ctr))
+```
+
+```{r}
+data %>% filter(traffic_for_profit<25000, cpc<.4)
+```
+
