@@ -12,36 +12,75 @@ knitr::opts_chunk$set(echo = F, message = F, warning = F)
 ```{r}
 library(tidyverse)
 library(ppctools)
+library(scales)
+library(ggthemes)
 ```
+
 
 
 
 ```{r}
-profit <- 3000
-product_cost <- 100
-cpc <- .2
-cr <- .02
-ctr <- .02
-ppctools::traffic_for_profit(
-  profit = profit,
-  product_cost = product_cost,
-  cpc = cpc,
-  cr = cr,
-  ctr = ctr
-)
+getTrafficForProfitData <- function(profit) {
+  expand_grid(
+    product_cost = seq(10, 150, 10),
+    cpc = seq(0.1, 1, 0.1),
+    cr = seq(0.01, 0.05, 0.01),
+    ctr = seq(0.01, 0.05, 0.01)
+  ) %>%
+    mutate(ocr = cr * ctr) %>%
+    mutate(profit = profit) %>%
+    mutate(traffic_for_profit = traffic_for_profit(profit, product_cost, cpc, cr, ctr)) %>%
+    filter(is.finite(traffic_for_profit))
+}
+```
+
+
+
+
+```{r fig.height=10, fig.width=20}
+
+getTrafficForProfitData(3000) %>% filter(traffic_for_profit>0) %>% 
+  arrange(traffic_for_profit) %>%
+  mutate(isTrafficRealistic=(traffic_for_profit<50000)) %>% 
+  ggplot(aes(x = product_cost, y = traffic_for_profit, color=isTrafficRealistic, size=cpc), alpha=.3) +
+  scale_y_continuous(trans = "log10", labels=comma)+
+  scale_color_tableau() +
+  geom_point()
 ```
 
 ```{r}
-data <- expand_grid(
-  cpc=seq(0.1,1,0.1),
-  cr=seq(0.01,0.05,0.01),
-  ctr=seq(0.01,0.05,0.01)
-) %>% 
-  mutate(profit=3000, product_cost=18) %>% 
-  mutate(traffic_for_profit=traffic_for_profit(profit, product_cost, cpc, cr, ctr))
+getProfitData <- function() {
+  expand_grid(
+    traffic = seq(1000, 100000, 1000),
+    product_cost = seq(10, 150, 10),
+    cpc = seq(0.1, 1, 0.1),
+    cr = seq(0.01, 0.05, 0.01),
+    ctr = seq(0.01, 0.05, 0.01)
+  ) %>%
+    mutate(ocr = cr * ctr) %>%
+    mutate(profit = profit_for_specified_traffic(
+      traffic = traffic,
+      cpc = cpc,
+      product_cost = product_cost,
+      cr = cr,
+      ctr = ctr
+    ))
+}
 ```
 
 ```{r}
-data %>% filter(traffic_for_profit<25000, cpc<.4)
+data <- getProfitData()
 ```
+
+```{r fig.height=10, fig.width=20}
+data %>%
+  mutate(loss = profit < 0) %>%
+  mutate(product_cost_bin = cut(product_cost, 5),
+         cpc_cut = cut(cpc, 5)) %>%
+  ggplot(aes(x = traffic, y = profit, color = loss)) +
+  geom_point() +
+  scale_color_tableau() +
+  facet_grid( ~ product_cost_bin ~ cpc_cut)
+```
+
 
