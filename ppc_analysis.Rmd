@@ -52,8 +52,8 @@ getTrafficForProfitData(3000) %>% filter(traffic_for_profit>0) %>%
 getProfitData <- function() {
   expand_grid(
     traffic = seq(1000, 100000, 1000),
-    product_cost = seq(10, 150, 10),
-    cpc = seq(0.1, 1, 0.1),
+    product_cost = seq(10, 120, 10),
+    cpc = seq(0.1, 1.2, 0.1),
     cr = seq(0.01, 0.05, 0.01),
     ctr = seq(0.01, 0.05, 0.01)
   ) %>%
@@ -69,19 +69,21 @@ getProfitData <- function() {
 ```
 
 ```{r}
-data <- getProfitData() %>% 
-  select(-cr,-ctr) %>% 
-  distinct(.keep_all = T)
-data %>% glimpse()
+.05^2 * 1000
+```
+
+
+```{r}
+data <- getProfitData()
 ```
 
 ```{r fig.height=10, fig.width=20}
 data %>%
   filter(profit > 0) %>% 
   mutate(loss = profit < 0) %>%
-  mutate(product_cost_bin = cut(product_cost, 5),
-         ocr_cut = cut(ocr * 1000, 5),
-         cpc_cut = cut(cpc, 5)) %>%
+  mutate(product_cost_bin = cut(product_cost, include.lowest = T, breaks = c(0,20,40,60,80,100,130)),
+         ocr_cut = cut(ocr * 1000, c(0,0.75,1.5,2.25,3)),
+         cpc_cut = cut(cpc, c(0,.2,.4,.6,.8,1,1.25))) %>%
   ggplot(aes(x = traffic, y = profit, color = ocr_cut)) +
   geom_point() +
   annotate("rect", xmin=5000, xmax=40000, ymin=2000, ymax=Inf, color="grey", alpha=.4) +
