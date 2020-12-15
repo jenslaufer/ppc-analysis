@@ -77,13 +77,14 @@ getProfitData <- function() {
 data <- getProfitData()
 ```
 
+
 ```{r fig.height=10, fig.width=20}
 data %>%
   filter(profit > 0) %>% 
   mutate(loss = profit < 0) %>%
   mutate(product_cost_bin = cut(product_cost, include.lowest = T, breaks = c(0,20,40,60,80,100,130)),
-         ocr_cut = cut(ocr * 1000, c(0,0.75,1.5,2.25,3)),
-         cpc_cut = cut(cpc, c(0,.2,.4,.6,.8,1,1.25))) %>%
+         ocr_cut = cut(ocr * 1000, breaks=c(0,0.5,1.0,1.5,2,2.55), include.lowest = T),
+         cpc_cut = cut(cpc, breaks=c(0,.2,.4,.6,.8,1,1.26), include.lowest = T)) %>%
   ggplot(aes(x = traffic, y = profit, color = ocr_cut)) +
   geom_point() +
   annotate("rect", xmin=5000, xmax=40000, ymin=2000, ymax=Inf, color="grey", alpha=.4) +
@@ -92,5 +93,7 @@ data %>%
   scale_x_continuous(trans = "identity", labels = comma) +
   facet_grid( ~ product_cost_bin ~ cpc_cut, scales = "free")
 ```
+
+
 
 
