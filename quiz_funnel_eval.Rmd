@@ -1,0 +1,51 @@
+---
+title: "Break Even Analysis"
+author: "Jens Laufer"
+date: "29 8 2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+data <- expand_grid(
+  volume = seq(1000, 20000, 500),
+  cpc = seq(.1, 1, .1),
+  lead_cr = seq(.01, .25, .01),
+  sales_per_lead = seq(.01, .25, .01)
+) %>%
+  mutate(
+    cost_per_sale = cpc / (lead_cr * sales_per_lead),
+    num_of_leads = volume * lead_cr,
+    num_of_sales = volume * lead_cr * sales_per_lead,
+    costs = volume * cpc,
+    revenue = num_of_sales * cost_per_sale 
+  ) %>%
+  filter(cost_per_sale <= 15, cost_per_sale >= 5, cpc >= .4, cpc <= .8) %>%
+  arrange(cost_per_sale) %>%
+  rename(
+    `Number of prospects entering the Quiz Funnel` = volume,
+    `Cost per Prospect Entering the Quiz Funnel` = cpc,
+    `Lead Conversion Rate` = lead_cr,
+    `Sales per Lead`=sales_per_lead,
+    `Break-even Product Price` = cost_per_sale,
+    `Number of generated leads` = num_of_leads,
+    `Number of Sales` = num_of_sales,
+    `Initial Ad Investment` =  costs,
+    `Revenue` = revenue
+  )
+
+
+data 
+```
+
+
+
+
+
