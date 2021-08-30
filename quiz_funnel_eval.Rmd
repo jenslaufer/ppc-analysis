@@ -17,8 +17,8 @@ library(tidyverse)
 data <- expand_grid(
   volume = seq(1000, 20000, 500),
   cpc = seq(.1, 1, .1),
-  lead_cr = seq(.01, .25, .01),
-  sales_per_lead = seq(.01, .25, .01)
+  lead_cr = seq(.01, .4, .01),
+  sales_per_lead = seq(.01, .3, .01)
 ) %>%
   mutate(
     cost_per_sale = cpc / (lead_cr * sales_per_lead),
@@ -41,10 +41,27 @@ data <- expand_grid(
     `Revenue` = revenue
   )
 
-
-data 
+data %>% 
+  select(`Lead Conversion Rate`, `Sales per Lead`) %>% 
+  gather() %>% 
+  ggplot(aes(x = value, y = "")) +
+  geom_boxplot() +
+  facet_wrap(~key)
+data
 ```
 
+```{r}
+data %>% 
+  mutate(`Break-even Product Price Bucket`=cut(`Break-even Product Price`,5)) %>% 
+  ggplot(aes(x = `Lead Conversion Rate`, y= `Sales per Lead`, color=`Break-even Product Price Bucket`)) +
+  geom_point()
+```
+
+
+
+```{r}
+data %>% write_csv("realistic_ppc_scenenarios.csv")
+```
 
 
 
